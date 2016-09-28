@@ -11,5 +11,7 @@
         public const string CurrentDirectory = ".";
 
         public static readonly string[] NoFiles = new string[] { };
+
+        public const string EmptyString = "";
     }
 }

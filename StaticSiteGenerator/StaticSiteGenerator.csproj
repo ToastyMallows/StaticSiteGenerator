@@ -58,8 +58,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contexts\DirectoryProviderContext.cs" />
     <Compile Include="Contexts\ErrorWriterContext.cs" />
+    <Compile Include="Contexts\IOContext.cs" />
     <Compile Include="Enumerations.cs" />
     <Compile Include="Helpers\ExtensionMethods.cs" />
     <Compile Include="Helpers\Guard.cs" />

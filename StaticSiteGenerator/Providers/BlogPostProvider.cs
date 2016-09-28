@@ -17,15 +17,15 @@ namespace StaticSiteGenerator.Providers
         public bool TryGetBlogPostsDescending( out IEnumerable<IBlogPost> blogPosts )
         {
             blogPosts = null;
-            string postsDirectory = Path.Combine( DirectoryProviderContext.Current.GetCurrentDirectory(), POST_FOLDER );
+            string postsDirectory = Path.Combine( IOContext.Current.GetCurrentDirectory(), POST_FOLDER );
 
-            if ( !DirectoryProviderContext.Current.Exists( postsDirectory ) )
+            if ( !IOContext.Current.DirectoryExists( postsDirectory ) )
             {
                 ErrorWriterContext.Current.WriteLine( "No posts folder" );
                 return false;
             }
 
-            IEnumerable<string> jsonMetadataFiles = DirectoryProviderContext.Current.GetFiles( postsDirectory, "*.json", SearchOption.AllDirectories );
+            IEnumerable<string> jsonMetadataFiles = IOContext.Current.GetFilesFromDirectory( postsDirectory, "*.json", SearchOption.AllDirectories );
 
             ICollection<IBlogPostMetadata> blogPostMetadata = processJsonMetadataFiles( jsonMetadataFiles );
 
