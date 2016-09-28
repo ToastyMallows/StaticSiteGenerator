@@ -1,5 +1,5 @@
 ﻿
-namespace StaticSiteGenerator.Models.Interfaces
+namespace StaticSiteGenerator.Models
 {
     public interface IOptions
     {

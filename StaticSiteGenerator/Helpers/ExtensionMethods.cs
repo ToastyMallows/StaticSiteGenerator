@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 
 namespace StaticSiteGenerator
@@ -29,6 +31,11 @@ namespace StaticSiteGenerator
             }
 
             return attribute.Description;
+        }
+
+        public static bool IsEmpty<T>( this IEnumerable<T> enumerable )
+        {
+            return !enumerable.Any();
         }
     }
 }

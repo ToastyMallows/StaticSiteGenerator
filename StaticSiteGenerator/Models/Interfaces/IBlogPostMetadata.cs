@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StaticSiteGenerator.Models.Interfaces
+namespace StaticSiteGenerator.Models
 {
     public interface IBlogPostMetadata
     {

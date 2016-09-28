@@ -1,5 +1,4 @@
-﻿using StaticSiteGenerator.Models.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace StaticSiteGenerator.Models
