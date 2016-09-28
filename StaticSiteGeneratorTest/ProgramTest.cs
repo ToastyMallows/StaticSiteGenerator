@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using StaticSiteGenerator.Contexts;
 using StaticSiteGenerator.Models;
+using StaticSiteGeneratorTest;
 
 namespace StaticSiteGenerator.Test
 {
@@ -8,11 +9,13 @@ namespace StaticSiteGenerator.Test
     public sealed class ProgramTest
     {
         private static string expectedUsageMessage;
+        private static TestErrorWriter testErrorWriter;
 
         [OneTimeSetUp]
         public void ProgramTest_Setup()
         {
             expectedUsageMessage = ( new Options() ).GetUsage();
+            TestErrorWriter.SetCurrentErrorWriterContext( out testErrorWriter );
         }
 
         #region Program Tests
@@ -43,9 +46,6 @@ namespace StaticSiteGenerator.Test
             string[] args = new string[] { "-test", "-switches" };
             int expectedStatus = Constants.ERROR_STATUS;
 
-            TestErrorWriter testErrorWriter = new TestErrorWriter();
-            setErrorWriterContext( testErrorWriter );
-
             int actualStatus = Program.Main( args );
             Assert.AreEqual( expectedStatus, actualStatus );
             Assert.AreEqual( expectedUsageMessage, testErrorWriter.LastErrorString );
@@ -57,9 +57,6 @@ namespace StaticSiteGenerator.Test
         {
             string[] args = new string[] { "-t" };
             int expectedStatus = Constants.ERROR_STATUS;
-
-            TestErrorWriter testErrorWriter = new TestErrorWriter();
-            setErrorWriterContext( testErrorWriter );
 
             int actualStatus = Program.Main( args );
             Assert.AreEqual( expectedStatus, actualStatus );
@@ -73,30 +70,6 @@ namespace StaticSiteGenerator.Test
         private void setErrorWriterContext( TestErrorWriter testErrorWriter )
         {
             ErrorWriterContext.Current = testErrorWriter;
-        }
-
-        private static class Constants
-        {
-            public const int ERROR_STATUS = 1;
-            public const int SUCCESS_STATUS = 0;
-        }
-
-        private class TestErrorWriter : ErrorWriterContext
-        {
-            private string _lastErrorString = null;
-
-            public string LastErrorString
-            {
-                get
-                {
-                    return _lastErrorString;
-                }
-            }
-
-            public override void WriteLine( string error )
-            {
-                _lastErrorString = error;
-            }
         }
     }
 }
