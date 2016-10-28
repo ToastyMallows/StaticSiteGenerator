@@ -1,7 +1,6 @@
 ﻿using StaticSiteGenerator.Contexts;
 using StaticSiteGenerator.Models;
 using StaticSiteGenerator.Providers;
-using System.Collections.Generic;
 
 namespace StaticSiteGenerator
 {
@@ -16,18 +15,20 @@ namespace StaticSiteGenerator
                 return Constants.ERROR;
             }
 
-            IBlogPostProvider blogPostProvider = new BlogPostProvider();
+            IBlogPostProvider blogPostProvider = new BlogPostProvider( options );
+            ITemplateProvider templateProvider = new TemplateProvider( options );
 
-            IEnumerable<IBlogPost> blogPosts;
-            bool blogPostProcessingSuccess = blogPostProvider.TryGetBlogPostsDescending( out blogPosts );
+            // TODO: Make SiteGeneratorFactory?
+            ISiteGenerator siteGenerator = new SiteGenerator( blogPostProvider, templateProvider );
 
-            if ( !blogPostProcessingSuccess )
+            bool siteGenerationSuccess = siteGenerator.TryGenerateSite();
+
+            if ( siteGenerationSuccess )
             {
-                ErrorWriterContext.Current.WriteLine( "Error processing blog post files" );
-                return Constants.ERROR;
+                return Constants.SUCCESS;
             }
 
-            return Constants.SUCCESS;
+            return Constants.ERROR;
         }
 
         #region Constants

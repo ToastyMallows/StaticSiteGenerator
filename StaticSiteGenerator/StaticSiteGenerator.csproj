@@ -73,6 +73,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BlogPostProvider.cs" />
     <Compile Include="Providers\Interfaces\IBlogPostProvider.cs" />
+    <Compile Include="Providers\Interfaces\ISiteGenerator.cs" />
+    <Compile Include="Providers\Interfaces\ITemplateProvider.cs" />
+    <Compile Include="Providers\SiteGenerator.cs" />
+    <Compile Include="Providers\TemplateProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

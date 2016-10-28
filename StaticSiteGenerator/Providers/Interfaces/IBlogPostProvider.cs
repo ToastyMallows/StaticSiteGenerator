@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace StaticSiteGenerator.Providers
 {
-    interface IBlogPostProvider
+    internal interface IBlogPostProvider
     {
         bool TryGetBlogPostsDescending( out IEnumerable<IBlogPost> blogPosts );
     }

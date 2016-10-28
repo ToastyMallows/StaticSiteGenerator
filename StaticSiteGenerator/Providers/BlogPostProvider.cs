@@ -14,6 +14,15 @@ namespace StaticSiteGenerator.Providers
     {
         private const string POST_FOLDER = "posts";
 
+        private readonly IOptions _options;
+
+        public BlogPostProvider( IOptions options )
+        {
+            Guard.VerifyArgumentNotNull( options, nameof( options ) );
+
+            _options = options;
+        }
+
         public bool TryGetBlogPostsDescending( out IEnumerable<IBlogPost> blogPosts )
         {
             blogPosts = null;
@@ -53,7 +62,7 @@ namespace StaticSiteGenerator.Providers
 
         private static bool processBlogPosts( IEnumerable<IBlogPostMetadata> blogPostMetadata, out IEnumerable<IBlogPost> blogPosts )
         {
-            bool success = true;
+            blogPosts = null;
             ICollection<IBlogPost> returnBlogPosts = new Collection<IBlogPost>();
             Markdown markdownTransformer = new Markdown();
 
@@ -69,17 +78,13 @@ namespace StaticSiteGenerator.Providers
                 catch ( Exception e )
                 {
                     ErrorWriterContext.Current.WriteLine( e.ToString() );
-                    success = false;
+                    return false;
                 }
             }
 
-            blogPosts = success ?
-                    // Order by latest date first
-                    returnBlogPosts.OrderByDescending( blogPost => blogPost.Metadata.Date ).AsEnumerable()
-                    :
-                    null;
+            blogPosts = returnBlogPosts.OrderByDescending( blogPost => blogPost.Metadata.Date );
 
-            return success;
+            return true;
         }
     }
 }
