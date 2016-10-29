@@ -1,9 +1,10 @@
-﻿using HtmlAgilityPack;
+﻿using StaticSiteGenerator.Models;
+using System.Collections.Generic;
 
 namespace StaticSiteGenerator.Providers
 {
     internal interface ITemplateProvider
     {
-        bool TryGetBlogTempalte( out HtmlDocument htmlDocument );
+        bool TryMakeBlogPosts( IReadOnlyCollection<IBlogPost> blogPosts );
     }
 }

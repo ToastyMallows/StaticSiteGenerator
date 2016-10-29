@@ -18,5 +18,8 @@ namespace StaticSiteGenerator.Models
             stringBuilder.Append( "Static Site Generate for C#" );
             return stringBuilder.ToString();
         }
+
+        [Option( 'o', "output", DefaultValue = "_website", HelpText = "The folder that the website files will be output to, default is '_website'." )]
+        public string OutputDirectory { get; set; }
     }
 }

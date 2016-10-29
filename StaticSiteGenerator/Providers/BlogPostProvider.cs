@@ -23,7 +23,7 @@ namespace StaticSiteGenerator.Providers
             _options = options;
         }
 
-        public bool TryGetBlogPostsDescending( out IEnumerable<IBlogPost> blogPosts )
+        public bool TryGetBlogPostsDescending( out IReadOnlyCollection<IBlogPost> blogPosts )
         {
             blogPosts = null;
             string postsDirectory = Path.Combine( IOContext.Current.GetCurrentDirectory(), POST_FOLDER );
@@ -54,13 +54,21 @@ namespace StaticSiteGenerator.Providers
             foreach ( string jsonFile in jsonMetadataFiles )
             {
                 string json = File.ReadAllText( jsonFile );
-                blogPostMetadata.Add( JsonConvert.DeserializeObject<BlogPostMetadata>( json ) );
+
+                IBlogPostMetadata metadata = JsonConvert.DeserializeObject<BlogPostMetadata>( json );
+                if ( metadata.Layout != Layout.Post )
+                {
+                    // This metadata file isn't for a blog post, move on!
+                    continue;
+                }
+
+                blogPostMetadata.Add( metadata );
             }
 
             return blogPostMetadata;
         }
 
-        private static bool processBlogPosts( IEnumerable<IBlogPostMetadata> blogPostMetadata, out IEnumerable<IBlogPost> blogPosts )
+        private static bool processBlogPosts( IEnumerable<IBlogPostMetadata> blogPostMetadata, out IReadOnlyCollection<IBlogPost> blogPosts )
         {
             blogPosts = null;
             ICollection<IBlogPost> returnBlogPosts = new Collection<IBlogPost>();
@@ -82,7 +90,7 @@ namespace StaticSiteGenerator.Providers
                 }
             }
 
-            blogPosts = returnBlogPosts.OrderByDescending( blogPost => blogPost.Metadata.Date );
+            blogPosts = new ReadOnlyCollection<IBlogPost>( returnBlogPosts.OrderByDescending( blogPost => blogPost.Metadata.Date ).ToList() );
 
             return true;
         }

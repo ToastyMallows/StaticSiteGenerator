@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace StaticSiteGenerator.Contexts
 {
@@ -35,6 +34,8 @@ namespace StaticSiteGenerator.Contexts
 
         public abstract string ReadAllTextFromFile( string path );
 
+        public abstract DirectoryInfo CreateDirectory( string path );
+
         private class DotNetIOContext : IIOContext
         {
             public bool DirectoryExists( string path )
@@ -56,6 +57,11 @@ namespace StaticSiteGenerator.Contexts
             {
                 return File.ReadAllText( path );
             }
+
+            public DirectoryInfo CreateDirectory( string path )
+            {
+                return Directory.CreateDirectory( path );
+            }
         }
     }
 
@@ -68,5 +74,7 @@ namespace StaticSiteGenerator.Contexts
         string[] GetFilesFromDirectory( string path, string searchPattern, SearchOption searchOption );
 
         string ReadAllTextFromFile( string path );
+
+        DirectoryInfo CreateDirectory( string path );
     }
 }

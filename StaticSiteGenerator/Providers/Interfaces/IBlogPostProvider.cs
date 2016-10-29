@@ -5,6 +5,6 @@ namespace StaticSiteGenerator.Providers
 {
     internal interface IBlogPostProvider
     {
-        bool TryGetBlogPostsDescending( out IEnumerable<IBlogPost> blogPosts );
+        bool TryGetBlogPostsDescending( out IReadOnlyCollection<IBlogPost> blogPosts );
     }
 }

@@ -8,5 +8,7 @@ namespace StaticSiteGenerator.Models
         string TemplateFile { get; set; }
 
         string GetUsage();
+
+        string OutputDirectory { get; set; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using HtmlAgilityPack;
-using StaticSiteGenerator.Contexts;
+﻿using StaticSiteGenerator.Contexts;
 using StaticSiteGenerator.Models;
 using System.Collections.Generic;
 
@@ -21,7 +20,7 @@ namespace StaticSiteGenerator.Providers
 
         public bool TryGenerateSite()
         {
-            IEnumerable<IBlogPost> blogPosts;
+            IReadOnlyCollection<IBlogPost> blogPosts;
             bool blogPostProcessingSuccess = _blogPostProvider.TryGetBlogPostsDescending( out blogPosts );
 
             if ( !blogPostProcessingSuccess )
@@ -32,12 +31,10 @@ namespace StaticSiteGenerator.Providers
 
             // At this point blog posts should be in descending order
 
-            HtmlDocument template;
-            bool templateProcessingSuccess = _templateProvider.TryGetBlogTempalte( out template );
-
-            if ( !templateProcessingSuccess )
+            bool blogPostsCreated = _templateProvider.TryMakeBlogPosts( blogPosts );
+            if ( !blogPostsCreated )
             {
-                ErrorWriterContext.Current.WriteLine( "Error retrieving or loading template HTML" );
+                ErrorWriterContext.Current.WriteLine( "Error creating blog posts" );
                 return false;
             }
 
