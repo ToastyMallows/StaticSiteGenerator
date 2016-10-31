@@ -21,5 +21,8 @@ namespace StaticSiteGenerator.Models
 
         [Option( 'o', "output", DefaultValue = "_website", HelpText = "The folder that the website files will be output to, default is '_website'." )]
         public string OutputDirectory { get; set; }
+
+        [Option( 'f', "force", DefaultValue = false, HelpText = "Overwrites the output directory if it exists already, default is false." )]
+        public bool Force { get; set; }
     }
 }

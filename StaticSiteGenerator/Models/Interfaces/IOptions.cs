@@ -10,5 +10,7 @@ namespace StaticSiteGenerator.Models
         string GetUsage();
 
         string OutputDirectory { get; set; }
+
+        bool Force { get; set; }
     }
 }

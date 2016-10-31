@@ -1,5 +1,8 @@
-﻿namespace StaticSiteGenerator.Models
+﻿using System.Diagnostics;
+
+namespace StaticSiteGenerator.Models
 {
+    [DebuggerDisplay( "Date = {Metadata.Date}, Title = {Metadata.Title}" )]
     internal class BlogPost : IBlogPost
     {
 

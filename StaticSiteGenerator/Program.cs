@@ -1,6 +1,7 @@
 ﻿using StaticSiteGenerator.Contexts;
 using StaticSiteGenerator.Models;
 using StaticSiteGenerator.Providers;
+using static System.FormattableString;
 
 namespace StaticSiteGenerator
 {
@@ -13,6 +14,19 @@ namespace StaticSiteGenerator
             {
                 ErrorWriterContext.Current.WriteLine( options.GetUsage() );
                 return Constants.ERROR;
+            }
+
+            if ( IOContext.Current.DirectoryExists( options.OutputDirectory ) )
+            {
+                if ( !options.Force )
+                {
+                    ErrorWriterContext.Current.WriteLine( Invariant( $"Output Directory '{options.OutputDirectory}' already exists in the current folder." ) );
+                    return Constants.ERROR;
+                }
+                else
+                {
+                    System.IO.Directory.Delete( options.OutputDirectory, true );
+                }
             }
 
             IBlogPostProvider blogPostProvider = new BlogPostProvider( options );

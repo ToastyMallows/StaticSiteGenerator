@@ -4,6 +4,7 @@ using StaticSiteGenerator.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using static System.FormattableString;
 
 namespace StaticSiteGenerator.Providers
@@ -13,6 +14,14 @@ namespace StaticSiteGenerator.Providers
     {
         private readonly IOptions _options;
         private readonly string _fullPathToTemplate;
+
+        private const string NextPostXPath = "//a[@id='" + Constants.NextID + "']";
+        private const string PreviousPostXPath = "//a[@id='" + Constants.PreviousID + "']";
+        private const string BlogXPath = "//div[@id='" + Constants.BlogID + "']";
+        private const string TitleXPath = "//*[contains(@class,'" + Constants.TitleClass + "')]";
+        private const string DateXPath = "//*[contains(@class,'" + Constants.DateClass + "')]";
+
+        private const string HREF = "href";
 
         public TemplateProvider( IOptions options )
         {
@@ -61,11 +70,11 @@ namespace StaticSiteGenerator.Providers
                     {
                         if ( index == 1 )
                         {
-                            buttonsNeeded = NavigationButtons.NextOnly;
+                            buttonsNeeded = NavigationButtons.PreviousOnly;
                         }
                         else if ( index == posts )
                         {
-                            buttonsNeeded = NavigationButtons.PreviousOnly;
+                            buttonsNeeded = NavigationButtons.NextOnly;
                         }
                         else
                         {
@@ -73,7 +82,7 @@ namespace StaticSiteGenerator.Providers
                         }
                     }
 
-                    populatedTemplates.Add( new PopulatedTemplate( blogPost, template, buttonsNeeded ) );
+                    populatedTemplates.Add( new PopulatedTemplate( blogPost, template, buttonsNeeded, _options.OutputDirectory ) );
                 }
                 catch ( Exception e )
                 {
@@ -85,11 +94,44 @@ namespace StaticSiteGenerator.Providers
                 index++;
             }
 
-            foreach ( PopulatedTemplate populatedTemplate in populatedTemplates )
+            for ( int i = 0; i < populatedTemplates.Count; i++ )
             {
-                // Do work for next and previous buttons
+                PopulatedTemplate currentTemplate = populatedTemplates[i];
 
-                SavePopulatedTemplate( populatedTemplate );
+                switch ( currentTemplate.ButtonsNeeded )
+                {
+                    case NavigationButtons.None:
+                        hideNext( currentTemplate );
+                        hidePrevious( currentTemplate );
+                        break;
+                    case NavigationButtons.NextOnly:
+                        {
+                            PopulatedTemplate nextTemplate = populatedTemplates[i - 1];
+                            replaceNext( currentTemplate, nextTemplate.RelativePath );
+                            hidePrevious( currentTemplate );
+                        }
+                        break;
+                    case NavigationButtons.PreviousOnly:
+                        {
+                            PopulatedTemplate previousTemplate = populatedTemplates[i + 1];
+                            replacePrevious( currentTemplate, previousTemplate.RelativePath );
+                            hideNext( currentTemplate );
+                        }
+                        break;
+                    case NavigationButtons.Both:
+                        {
+                            PopulatedTemplate previousTemplate = populatedTemplates[i + 1];
+                            replacePrevious( currentTemplate, previousTemplate.RelativePath );
+
+                            PopulatedTemplate nextTemplate = populatedTemplates[i - 1];
+                            replaceNext( currentTemplate, nextTemplate.RelativePath );
+                        }
+                        break;
+                    default:
+                        throw new InvalidOperationException( Invariant( $"Enum value {currentTemplate.ButtonsNeeded} not supported" ) );
+                }
+
+                currentTemplate.Save();
             }
 
             return true;
@@ -97,13 +139,13 @@ namespace StaticSiteGenerator.Providers
 
         private static void replaceBlogDiv( HtmlDocument template, IBlogPost blogPost )
         {
-            HtmlNode blogDiv = template.DocumentNode.SelectSingleNode( "//div[contains(@id,'" + Constants.BlogID + "')]" );
+            HtmlNode blogDiv = template.DocumentNode.SelectSingleNode( BlogXPath );
             blogDiv.InnerHtml = blogPost.PostHTML;
         }
 
         private static void replaceAllTitles( HtmlDocument template, IBlogPost blogPost )
         {
-            HtmlNodeCollection titles = template.DocumentNode.SelectNodes( "//*[contains(@class,'" + Constants.TitleClass + "')]" );
+            HtmlNodeCollection titles = template.DocumentNode.SelectNodes( TitleXPath );
 
             foreach ( HtmlNode title in titles )
             {
@@ -113,7 +155,7 @@ namespace StaticSiteGenerator.Providers
 
         private static void replaceAllDates( HtmlDocument template, IBlogPost blogPost )
         {
-            HtmlNodeCollection dates = template.DocumentNode.SelectNodes( "//*[contains(@class,'" + Constants.DateClass + "')]" );
+            HtmlNodeCollection dates = template.DocumentNode.SelectNodes( DateXPath );
 
             string dateString = blogPost.Metadata.Date.ToString();
             foreach ( HtmlNode date in dates )
@@ -122,18 +164,40 @@ namespace StaticSiteGenerator.Providers
             }
         }
 
-        private static void hidePrevious( HtmlDocument template )
+        private static void replacePrevious( PopulatedTemplate template, string relativeUri )
         {
-            HtmlNode previous = template.DocumentNode.SelectSingleNode( "//*[contains(@id,'" + Constants.PreviousID + "')]" );
+            HtmlDocument populatedDocument = template.PopulatedDocument;
+
+            HtmlNode previous = populatedDocument.DocumentNode.SelectSingleNode( PreviousPostXPath );
+
+            previous.Attributes.Add( HREF, relativeUri );
+        }
+
+        private static void hidePrevious( PopulatedTemplate template )
+        {
+            HtmlDocument populatedDocument = template.PopulatedDocument;
+
+            HtmlNode previous = populatedDocument.DocumentNode.SelectSingleNode( PreviousPostXPath );
 
             previous.Remove();
         }
 
-        private static void hideNext( HtmlDocument template )
+        private static void replaceNext( PopulatedTemplate template, string relativeUri )
         {
-            HtmlNode previous = template.DocumentNode.SelectSingleNode( "//*[contains(@id,'" + Constants.NextID + "')]" );
+            HtmlDocument populatedDocument = template.PopulatedDocument;
 
-            previous.Remove();
+            HtmlNode next = populatedDocument.DocumentNode.SelectSingleNode( NextPostXPath );
+
+            next.Attributes.Add( HREF, relativeUri );
+        }
+
+        private static void hideNext( PopulatedTemplate template )
+        {
+            HtmlDocument populatedDocument = template.PopulatedDocument;
+
+            HtmlNode next = populatedDocument.DocumentNode.SelectSingleNode( NextPostXPath );
+
+            next.Remove();
         }
 
         private string getFullPathToTemplate()
@@ -144,16 +208,6 @@ namespace StaticSiteGenerator.Providers
         private void ensureTemplateHtmlIsValid()
         {
             ( new HtmlDocument() ).Load( _fullPathToTemplate );
-        }
-
-        private void SavePopulatedTemplate( PopulatedTemplate populatedTemplate )
-        {
-            string folderToCreate = Path.Combine( _options.OutputDirectory, populatedTemplate.FolderName );
-            string folderToCreateFullPath = Path.GetFullPath( folderToCreate );
-
-            IOContext.Current.CreateDirectory( folderToCreate );
-
-            populatedTemplate.Save( Path.Combine( folderToCreateFullPath, "index.html" ) );
         }
 
         private class Constants
@@ -167,11 +221,15 @@ namespace StaticSiteGenerator.Providers
 
         private struct PopulatedTemplate
         {
-            public PopulatedTemplate( IBlogPost blogPost, HtmlDocument populatedDocument, NavigationButtons buttonsNeeded )
+            private const string FILE_NAME = "index.html";
+            private readonly string _outputDirectory;
+
+            public PopulatedTemplate( IBlogPost blogPost, HtmlDocument populatedDocument, NavigationButtons buttonsNeeded, string outputDirectory )
             {
                 BlogPost = blogPost;
                 PopulatedDocument = populatedDocument;
                 ButtonsNeeded = buttonsNeeded;
+                _outputDirectory = outputDirectory;
             }
 
             public IBlogPost BlogPost
@@ -189,18 +247,44 @@ namespace StaticSiteGenerator.Providers
                 get;
             }
 
+            public string RelativePath
+            {
+                get
+                {
+                    return Path.Combine( "..", FolderName, FILE_NAME );
+                }
+            }
+
             public string FolderName
             {
                 get
                 {
                     // TODO: length limit?
-                    return BlogPost.Metadata.Title.Replace( ' ', '-' ).ToLower();
+                    return getFolderName( BlogPost.Metadata.Title ).ToLower();
                 }
             }
 
-            public void Save( string path )
+            public void Save()
             {
-                PopulatedDocument.Save( path );
+                PopulatedDocument.Save( FullPath );
+            }
+
+            private string FullPath
+            {
+                get
+                {
+                    string folderToCreate = Path.Combine( _outputDirectory, FolderName );
+                    string folderToCreateFullPath = Path.GetFullPath( folderToCreate );
+
+                    IOContext.Current.CreateDirectory( folderToCreate );
+
+                    return Path.Combine( folderToCreateFullPath, FILE_NAME );
+                }
+            }
+
+            private static string getFolderName( string path )
+            {
+                return Regex.Replace( path, @"[!@#$%^&*()\[\]\\\/:;'"".,?=+{}|_~`<>]", string.Empty ).Replace( " ", "-" );
             }
         }
 
