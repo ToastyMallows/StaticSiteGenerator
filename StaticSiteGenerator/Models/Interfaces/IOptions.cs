@@ -5,7 +5,9 @@ namespace StaticSiteGenerator.Models
     {
         bool Generate { get; set; }
 
-        string TemplateFile { get; set; }
+        string BlogTemplateFile { get; set; }
+
+        string PageTemplateFile { get; set; }
 
         string GetUsage();
 

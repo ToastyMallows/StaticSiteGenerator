@@ -10,20 +10,11 @@ using System.Linq;
 
 namespace StaticSiteGenerator.Providers
 {
-    internal sealed class BlogPostProvider : IBlogPostProvider
+    internal sealed class BlogPostProvider : IBasePageProvider
     {
         private const string POST_FOLDER = "posts";
 
-        private readonly IOptions _options;
-
-        public BlogPostProvider( IOptions options )
-        {
-            Guard.VerifyArgumentNotNull( options, nameof( options ) );
-
-            _options = options;
-        }
-
-        public bool TryGetBlogPostsDescending( out IReadOnlyCollection<IBlogPost> blogPosts )
+        public bool TryParseMetadataFiles( out IReadOnlyCollection<IBasePage> blogPosts )
         {
             blogPosts = null;
             string postsDirectory = Path.Combine( IOContext.Current.GetCurrentDirectory(), POST_FOLDER );
@@ -40,7 +31,7 @@ namespace StaticSiteGenerator.Providers
 
             if ( blogPostMetadata.IsEmpty() )
             {
-                ErrorWriterContext.Current.WriteLine( "No metadata files" );
+                ErrorWriterContext.Current.WriteLine( "No blog post metadata files" );
                 return false;
             }
 
@@ -56,7 +47,7 @@ namespace StaticSiteGenerator.Providers
                 string json = File.ReadAllText( jsonFile );
 
                 IBlogPostMetadata metadata = JsonConvert.DeserializeObject<BlogPostMetadata>( json );
-                if ( metadata.Layout != Layout.Post )
+                if ( metadata.LayoutType != LayoutType.Post )
                 {
                     // This metadata file isn't for a blog post, move on!
                     continue;
@@ -68,7 +59,7 @@ namespace StaticSiteGenerator.Providers
             return blogPostMetadata;
         }
 
-        private static bool processBlogPosts( IEnumerable<IBlogPostMetadata> blogPostMetadata, out IReadOnlyCollection<IBlogPost> blogPosts )
+        private static bool processBlogPosts( IEnumerable<IBlogPostMetadata> blogPostMetadata, out IReadOnlyCollection<IBasePage> blogPosts )
         {
             blogPosts = null;
             ICollection<IBlogPost> returnBlogPosts = new Collection<IBlogPost>();

@@ -1,6 +1,9 @@
-﻿using StaticSiteGenerator.Contexts;
+﻿using StaticSiteGenerator.Composers;
+using StaticSiteGenerator.Contexts;
+using StaticSiteGenerator.Generators;
 using StaticSiteGenerator.Models;
 using StaticSiteGenerator.Providers;
+using System.Collections.Generic;
 using static System.FormattableString;
 
 namespace StaticSiteGenerator
@@ -15,29 +18,38 @@ namespace StaticSiteGenerator
                 ErrorWriterContext.Current.WriteLine( options.GetUsage() );
                 return Constants.ERROR;
             }
+            OptionsContext.Current = new ProgramOptionsContext( options );
 
-            if ( IOContext.Current.DirectoryExists( options.OutputDirectory ) )
+
+            if ( IOContext.Current.DirectoryExists( OptionsContext.Current.Options.OutputDirectory ) )
             {
-                if ( !options.Force )
+                if ( !OptionsContext.Current.Options.Force )
                 {
-                    ErrorWriterContext.Current.WriteLine( Invariant( $"Output Directory '{options.OutputDirectory}' already exists in the current folder." ) );
+                    ErrorWriterContext.Current.WriteLine( Invariant( $"Output Directory '{OptionsContext.Current.Options.OutputDirectory}' already exists in the current folder." ) );
                     return Constants.ERROR;
                 }
                 else
                 {
-                    System.IO.Directory.Delete( options.OutputDirectory, true );
+                    System.IO.Directory.Delete( OptionsContext.Current.Options.OutputDirectory, true );
                 }
             }
 
-            IBlogPostProvider blogPostProvider = new BlogPostProvider( options );
-            ITemplateProvider templateProvider = new TemplateProvider( options );
 
-            // TODO: Make SiteGeneratorFactory?
-            ISiteGenerator siteGenerator = new SiteGenerator( blogPostProvider, templateProvider );
+            ICollection<IGenerator> generators = new List<IGenerator>();
 
-            bool siteGenerationSuccess = siteGenerator.TryGenerateSite();
+            IBasePageProvider blogPostProvider = new BlogPostProvider();
+            ITemplateComposer blogPostComposer = new BlogTemplateComposer();
 
-            if ( siteGenerationSuccess )
+            generators.Add( new BasePageGenerator( blogPostProvider, blogPostComposer ) );
+
+            IBasePageProvider pageProvider = new PageProvider();
+            ITemplateComposer pageComposer = new PageTemplateComposer();
+
+            generators.Add( new BasePageGenerator( pageProvider, pageComposer ) );
+
+            IGenerator siteGenerator = new SiteGenerator( generators );
+
+            if ( siteGenerator.TryGenerate() )
             {
                 return Constants.SUCCESS;
             }

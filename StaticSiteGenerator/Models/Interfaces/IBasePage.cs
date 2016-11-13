@@ -1,8 +1,8 @@
 ﻿namespace StaticSiteGenerator.Models
 {
-    public interface IBlogPost : IBasePage
+    public interface IBasePage
     {
-        IBlogPostMetadata Metadata
+        string HTML
         {
             get;
         }

@@ -19,7 +19,7 @@ namespace StaticSiteGenerator.Contexts
             set
             {
                 IIOContext ioContext = value as IIOContext;
-                Guard.VerifyArgumentNotNull( value, "IOContextSetValue" );
+                Guard.VerifyArgumentNotNull( value, "IIOContextSetValue" );
                 _current = ioContext;
             }
         }

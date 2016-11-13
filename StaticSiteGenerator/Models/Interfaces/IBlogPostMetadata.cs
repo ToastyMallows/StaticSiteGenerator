@@ -3,16 +3,10 @@ using System.Collections.Generic;
 
 namespace StaticSiteGenerator.Models
 {
-    public interface IBlogPostMetadata
+    public interface IBlogPostMetadata : IBasePageMetadata
     {
-        Layout Layout { get; set; }
-
-        string Title { get; set; }
-
         DateTime Date { get; set; }
 
         IList<string> Categories { get; set; }
-
-        string Markdown { get; set; }
     }
 }

@@ -7,50 +7,47 @@ using System.IO;
 using System.Text.RegularExpressions;
 using static System.FormattableString;
 
-namespace StaticSiteGenerator.Providers
+namespace StaticSiteGenerator.Composers
 {
-    // TODO: Rename?
-    internal sealed class TemplateProvider : ITemplateProvider
+    internal class BlogTemplateComposer : TemplateComposer
     {
-        private readonly IOptions _options;
-        private readonly string _fullPathToTemplate;
+        //private readonly IHeaderProvider _headerProvider;
+        //private readonly IFooterProvider _footerProvider;
 
         private const string NextPostXPath = "//a[@id='" + Constants.NextID + "']";
         private const string PreviousPostXPath = "//a[@id='" + Constants.PreviousID + "']";
         private const string BlogXPath = "//div[@id='" + Constants.BlogID + "']";
         private const string TitleXPath = "//*[contains(@class,'" + Constants.TitleClass + "')]";
         private const string DateXPath = "//*[contains(@class,'" + Constants.DateClass + "')]";
-
         private const string HREF = "href";
 
-        public TemplateProvider( IOptions options )
+        public BlogTemplateComposer( /*IHeaderProvider headerProvider, IFooterProvider footerProvider*/ )
         {
-            Guard.VerifyArgumentNotNull( options, nameof( options ) );
+            //Guard.VerifyArgumentNotNull( headerProvider, nameof( headerProvider ) );
+            //Guard.VerifyArgumentNotNull( footerProvider, nameof( footerProvider ) );
 
-            _options = options;
-            _fullPathToTemplate = getFullPathToTemplate();
+            //_headerProvider = headerProvider;
+            //_footerProvider = footerProvider;
 
             ensureTemplateHtmlIsValid();
         }
 
-        private HtmlDocument CopyOfTemplate
+        protected override string TemplateFile
         {
             get
             {
-                HtmlDocument template = new HtmlDocument();
-                template.Load( _fullPathToTemplate );
-                return template;
+                return OptionsContext.Current.Options.BlogTemplateFile;
             }
         }
 
-        public bool TryMakeBlogPosts( IReadOnlyCollection<IBlogPost> blogPosts )
+        public override bool TryCompose( IReadOnlyCollection<IBasePage> basePageData )
         {
             int index = 1;
-            int posts = blogPosts.Count;
+            int posts = basePageData.Count;
 
             IList<PopulatedTemplate> populatedTemplates = new List<PopulatedTemplate>();
 
-            foreach ( IBlogPost blogPost in blogPosts )
+            foreach ( IBlogPost blogPost in basePageData )
             {
                 try
                 {
@@ -82,7 +79,7 @@ namespace StaticSiteGenerator.Providers
                         }
                     }
 
-                    populatedTemplates.Add( new PopulatedTemplate( blogPost, template, buttonsNeeded, _options.OutputDirectory ) );
+                    populatedTemplates.Add( new PopulatedTemplate( blogPost, template, buttonsNeeded, OptionsContext.Current.Options.OutputDirectory ) );
                 }
                 catch ( Exception e )
                 {
@@ -140,7 +137,7 @@ namespace StaticSiteGenerator.Providers
         private static void replaceBlogDiv( HtmlDocument template, IBlogPost blogPost )
         {
             HtmlNode blogDiv = template.DocumentNode.SelectSingleNode( BlogXPath );
-            blogDiv.InnerHtml = blogPost.PostHTML;
+            blogDiv.InnerHtml = blogPost.HTML;
         }
 
         private static void replaceAllTitles( HtmlDocument template, IBlogPost blogPost )
@@ -200,26 +197,7 @@ namespace StaticSiteGenerator.Providers
             next.Remove();
         }
 
-        private string getFullPathToTemplate()
-        {
-            return Path.GetFullPath( _options.TemplateFile );
-        }
-
-        private void ensureTemplateHtmlIsValid()
-        {
-            ( new HtmlDocument() ).Load( _fullPathToTemplate );
-        }
-
-        private class Constants
-        {
-            public const string BlogID = "SSGBlog";
-            public const string TitleClass = "SSGTitle";
-            public const string DateClass = "SSGDate";
-            public const string NextID = "SSGNextPost";
-            public const string PreviousID = "SSGPreviousPost";
-        }
-
-        private struct PopulatedTemplate
+        private class PopulatedTemplate
         {
             private const string FILE_NAME = "index.html";
             private readonly string _outputDirectory;
@@ -282,6 +260,7 @@ namespace StaticSiteGenerator.Providers
                 }
             }
 
+            // TODO: Reconcile this with base class implementation
             private static string getFolderName( string path )
             {
                 return Regex.Replace( path, @"[!@#$%^&*()\[\]\\\/:;'"".,?=+{}|_~`<>]", string.Empty ).Replace( " ", "-" );

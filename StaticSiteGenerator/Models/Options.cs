@@ -8,8 +8,11 @@ namespace StaticSiteGenerator.Models
         [Option( 'g', "generate", Required = true, HelpText = "Generate the website" )]
         public bool Generate { get; set; }
 
-        [Option( 't', "template", DefaultValue = "template.html", HelpText = "The template file that all blog pages will be based on, default is a file in this directory called template.html" )]
-        public string TemplateFile { get; set; }
+        [Option( 'b', "blogtemplate", DefaultValue = "blogtemplate.html", HelpText = "The template file that all blog pages will be based on, default is a file in this directory called template.html" )]
+        public string BlogTemplateFile { get; set; }
+
+        [Option( 'p', "pagetemplate", DefaultValue = "pagetemplate.html", HelpText = "The template file that all pages will be based on, default is a file in this directory called pagetemplate.html" )]
+        public string PageTemplateFile { get; set; }
 
         [HelpOption]
         public string GetUsage()

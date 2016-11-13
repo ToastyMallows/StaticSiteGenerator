@@ -1,12 +1,8 @@
-﻿using System.Diagnostics;
-
-namespace StaticSiteGenerator.Models
+﻿namespace StaticSiteGenerator.Models
 {
-    [DebuggerDisplay( "Date = {Metadata.Date}, Title = {Metadata.Title}" )]
-    internal class BlogPost : IBlogPost
+    internal class Page : IPage
     {
-
-        public BlogPost( IBlogPostMetadata metadata, string html )
+        public Page( IPageMetadata metadata, string html )
         {
             Guard.VerifyArgumentNotNull( metadata, nameof( metadata ) );
             Guard.VerifyArgumentNotNull( html, nameof( html ) );
@@ -15,7 +11,7 @@ namespace StaticSiteGenerator.Models
             HTML = html;
         }
 
-        public IBlogPostMetadata Metadata
+        public IPageMetadata Metadata
         {
             get;
         }

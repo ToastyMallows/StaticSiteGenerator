@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace StaticSiteGenerator.Providers
 {
-    internal interface ITemplateProvider
+    internal interface IBasePageProvider
     {
-        bool TryMakeBlogPosts( IReadOnlyCollection<IBlogPost> blogPosts );
+        bool TryParseMetadataFiles( out IReadOnlyCollection<IBasePage> basePage );
     }
 }

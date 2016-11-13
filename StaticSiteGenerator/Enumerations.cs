@@ -1,10 +1,17 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace StaticSiteGenerator
 {
-    public enum Layout
+    public enum LayoutType
     {
+        [Obsolete( "Not to be used by code, error state" )]
+        Undefined = 0,
+
         [Description( "post" )]
-        Post = 0
+        Post = 1,
+
+        [Description( "page" )]
+        Page = 2
     }
 }

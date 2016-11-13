@@ -58,25 +58,36 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Composers\BlogTemplateComposer.cs" />
+    <Compile Include="Composers\Interfaces\ITemplateComposer.cs" />
+    <Compile Include="Composers\PageTemplateComposer.cs" />
+    <Compile Include="Composers\TemplateComposer.cs" />
     <Compile Include="Contexts\ErrorWriterContext.cs" />
     <Compile Include="Contexts\IOContext.cs" />
+    <Compile Include="Contexts\OptionsContext.cs" />
     <Compile Include="Enumerations.cs" />
+    <Compile Include="Generators\BasePageGenerator.cs" />
+    <Compile Include="Generators\Interfaces\IGenerator.cs" />
     <Compile Include="Helpers\ExtensionMethods.cs" />
     <Compile Include="Helpers\Guard.cs" />
     <Compile Include="Models\BlogPost.cs" />
     <Compile Include="Models\BlogPostMetadata.cs" />
+    <Compile Include="Models\Interfaces\IBasePage.cs" />
+    <Compile Include="Models\Interfaces\IBasePageMetadata.cs" />
     <Compile Include="Models\Interfaces\IBlogPost.cs" />
     <Compile Include="Models\Interfaces\IBlogPostMetadata.cs" />
     <Compile Include="Models\Interfaces\IOptions.cs" />
+    <Compile Include="Models\Interfaces\IPage.cs" />
+    <Compile Include="Models\Interfaces\IPageMetadata.cs" />
     <Compile Include="Models\Options.cs" />
+    <Compile Include="Models\Page.cs" />
+    <Compile Include="Models\PageMetadata.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BlogPostProvider.cs" />
-    <Compile Include="Providers\Interfaces\IBlogPostProvider.cs" />
-    <Compile Include="Providers\Interfaces\ISiteGenerator.cs" />
-    <Compile Include="Providers\Interfaces\ITemplateProvider.cs" />
-    <Compile Include="Providers\SiteGenerator.cs" />
-    <Compile Include="Providers\TemplateProvider.cs" />
+    <Compile Include="Providers\Interfaces\IBasePageProvider.cs" />
+    <Compile Include="Generators\SiteGenerator.cs" />
+    <Compile Include="Providers\PageProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
