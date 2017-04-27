@@ -250,7 +250,7 @@ namespace StaticSiteGenerator.Composers
             {
                 get
                 {
-                    return Path.Combine("..", FolderName, FILE_NAME);
+                    return "..".AppendPath(FolderName, FILE_NAME);
                 }
             }
 
@@ -265,13 +265,14 @@ namespace StaticSiteGenerator.Composers
 
             public void Save()
             {
-                PopulatedDocument.Save(FullPath);
+                PopulatedDocument.Save(FullSavePath);
             }
 
-            private string FullPath
+            private string FullSavePath
             {
                 get
                 {
+                    // TODO: do not hard code "blog"
                     string folderToCreate = Path.Combine(_outputDirectory, "blog", FolderName);
                     string folderToCreateFullPath = Path.GetFullPath(folderToCreate);
 
@@ -281,7 +282,7 @@ namespace StaticSiteGenerator.Composers
                 }
             }
 
-            // TODO: Reconcile this with base class implementation
+            // TODO: Reconcile this with all other copied functions
             private static string getFolderName(string path)
             {
                 return Regex.Replace(path, @"[!@#$%^&*()\[\]\\\/:;'"".,?=+{}|_~`<>]", string.Empty).Replace(" ", "-");

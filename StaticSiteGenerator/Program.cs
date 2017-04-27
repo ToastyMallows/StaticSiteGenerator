@@ -43,6 +43,8 @@ namespace StaticSiteGenerator
             FragmentProvider fragmentProvider = new FragmentProvider(fragmentMetadataProvider);
             PageProvider pageProvider = new PageProvider(pageMetadataProvider);
             BlogPostProvider blogPostProvider = new BlogPostProvider(blogPostMetadataProvider);
+            // TODO: main index.html provider, just take the first blog page? have option to pick between static page and first blog page?
+            // TODO: make "Blog" an optional header page that takes the user to the latest blog post
 
             IFragmentComposer fragmentComposer = new FragmentComposer(fragmentProvider, pageProvider);
 

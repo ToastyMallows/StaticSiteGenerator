@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace StaticSiteGenerator.Models
 {
@@ -28,9 +27,7 @@ namespace StaticSiteGenerator.Models
         {
             get
             {
-                return getFolderName(Metadata.Title);
-                //string path = System.IO.Path.Combine(urlSafeTitle, "index.html");
-                //return path;
+                return getFolderName(Metadata.Title).ToLower();
             }
         }
 

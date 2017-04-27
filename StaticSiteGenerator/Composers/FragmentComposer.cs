@@ -11,16 +11,6 @@ namespace StaticSiteGenerator.Composers
 {
     internal class FragmentComposer : IFragmentComposer
     {
-        private enum SpecialFragmentType
-        {
-            [Obsolete("Not to be used by code, error state")]
-            Undefined = 0,
-
-            SSGHeader = 1,
-
-            SSGFooter = 2
-        }
-
         private static class Constants
         {
             public const string SSGHeaderPagesID = "SSGHeaderPages";
@@ -111,7 +101,7 @@ namespace StaticSiteGenerator.Composers
                 foreach (IPage page in headerPages)
                 {
                     string linkText = page.Metadata.Title;
-                    string path = System.IO.Path.Combine(parentDirectoriesSubpath, page.Path);
+                    string path = parentDirectoriesSubpath.AppendPath(page.Path);
 
                     string div = $"<span><a href=\"{path}\">{linkText}</a></span>";
 

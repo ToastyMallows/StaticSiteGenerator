@@ -37,5 +37,13 @@ namespace StaticSiteGenerator
         {
             return !enumerable.Any();
         }
+
+
+        public static string AppendPath(this string initialPath, params string[] paths)
+        {
+            return paths.Aggregate(initialPath,
+                    (current, path) => string.Format("{0}/{1}", current.TrimEnd('/'), path.TrimStart('/'))
+                );
+        }
     }
 }
