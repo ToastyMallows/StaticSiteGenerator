@@ -2,6 +2,6 @@
 {
     public interface IGenerator
     {
-        bool TryGenerate();
+        void Generate();
     }
 }

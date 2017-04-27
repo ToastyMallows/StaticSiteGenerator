@@ -10,51 +10,65 @@ namespace StaticSiteGenerator
 {
     public class Program
     {
-        public static int Main( string[] args )
+        public static int Main(string[] args)
         {
             IOptions options = new Options();
-            if ( !CommandLine.Parser.Default.ParseArguments( args, options ) )
+            if (!CommandLine.Parser.Default.ParseArguments(args, options))
             {
-                ErrorWriterContext.Current.WriteLine( options.GetUsage() );
+                ErrorWriterContext.Current.WriteLine(options.GetUsage());
                 return Constants.ERROR;
             }
-            OptionsContext.Current = new ProgramOptionsContext( options );
+            OptionsContext.Current = new ProgramOptionsContext(options);
 
 
-            if ( IOContext.Current.DirectoryExists( OptionsContext.Current.Options.OutputDirectory ) )
+            if (IOContext.Current.DirectoryExists(OptionsContext.Current.Options.OutputDirectory))
             {
-                if ( !OptionsContext.Current.Options.Force )
+                if (!OptionsContext.Current.Options.Force)
                 {
-                    ErrorWriterContext.Current.WriteLine( Invariant( $"Output Directory '{OptionsContext.Current.Options.OutputDirectory}' already exists in the current folder." ) );
+                    ErrorWriterContext.Current.WriteLine(Invariant($"Output Directory '{OptionsContext.Current.Options.OutputDirectory}' already exists in the current folder."));
                     return Constants.ERROR;
                 }
                 else
                 {
-                    System.IO.Directory.Delete( OptionsContext.Current.Options.OutputDirectory, true );
+                    System.IO.Directory.Delete(OptionsContext.Current.Options.OutputDirectory, true);
                 }
             }
 
+            // Metadata Providers
+            IMetadataProvider fragmentMetadataProvider = new MetadataProvider(LayoutType.Fragment);
+            IMetadataProvider pageMetadataProvider = new MetadataProvider(LayoutType.Page);
+            IMetadataProvider blogPostMetadataProvider = new MetadataProvider(LayoutType.Post);
 
-            ICollection<IGenerator> generators = new List<IGenerator>();
+            // Page Providers
+            FragmentProvider fragmentProvider = new FragmentProvider(fragmentMetadataProvider);
+            PageProvider pageProvider = new PageProvider(pageMetadataProvider);
+            BlogPostProvider blogPostProvider = new BlogPostProvider(blogPostMetadataProvider);
 
-            IBasePageProvider blogPostProvider = new BlogPostProvider();
-            ITemplateComposer blogPostComposer = new BlogTemplateComposer();
+            IFragmentComposer fragmentComposer = new FragmentComposer(fragmentProvider, pageProvider);
 
-            generators.Add( new BasePageGenerator( blogPostProvider, blogPostComposer ) );
+            // Composers
+            ITemplateComposer pageComposer = new PageComposer(pageProvider, fragmentComposer.FragmentComposingFunctions);
+            ITemplateComposer blogPostComposer = new BlogComposer(blogPostProvider, fragmentComposer.FragmentComposingFunctions);
 
-            IBasePageProvider pageProvider = new PageProvider();
-            ITemplateComposer pageComposer = new PageTemplateComposer();
-
-            generators.Add( new BasePageGenerator( pageProvider, pageComposer ) );
-
-            IGenerator siteGenerator = new SiteGenerator( generators );
-
-            if ( siteGenerator.TryGenerate() )
+            IList<IGenerator> generators = new List<IGenerator>()
             {
-                return Constants.SUCCESS;
+                new BasePageGenerator(pageComposer),
+                new BasePageGenerator(blogPostComposer)
+            };
+
+            IGenerator siteGenerator = new SiteGenerator(generators);
+
+            try
+            {
+                siteGenerator.Generate();
+            }
+            catch
+            {
+                // Other places that throw should write out an error message
+                return Constants.ERROR;
             }
 
-            return Constants.ERROR;
+            return Constants.SUCCESS;
         }
 
         #region Constants

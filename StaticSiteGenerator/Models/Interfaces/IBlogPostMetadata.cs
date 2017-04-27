@@ -7,6 +7,8 @@ namespace StaticSiteGenerator.Models
     {
         DateTime Date { get; set; }
 
+        string Title { get; set; }
+
         IList<string> Categories { get; set; }
     }
 }

@@ -13,18 +13,13 @@ namespace StaticSiteGenerator.Generators
             _siteGenerators = siteGenerators;
         }
 
-        public bool TryGenerate()
+        public void Generate()
         {
             foreach ( IGenerator generator in _siteGenerators )
             {
-                if ( !generator.TryGenerate() )
-                {
-                    return false;
-                }
+                generator.Generate();
 
             }
-
-            return true;
         }
     }
 }

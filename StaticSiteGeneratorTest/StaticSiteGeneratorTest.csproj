@@ -61,7 +61,6 @@
   <ItemGroup>
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\TestContexts.cs" />
-    <Compile Include="ProviderTests\BlogPostProviderTest.cs" />
     <Compile Include="ProgramTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -73,6 +72,9 @@
       <Project>{ac920efb-95eb-4438-be6d-b13f9af1df88}</Project>
       <Name>StaticSiteGenerator</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ProviderTests\" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

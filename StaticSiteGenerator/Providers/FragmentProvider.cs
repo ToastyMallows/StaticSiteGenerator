@@ -1,50 +1,49 @@
-﻿using HeyRed.MarkdownSharp;
-using StaticSiteGenerator.Contexts;
-using StaticSiteGenerator.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using StaticSiteGenerator.Models;
 using System.Collections.ObjectModel;
+using HeyRed.MarkdownSharp;
+using StaticSiteGenerator.Contexts;
 using System.IO;
 
 namespace StaticSiteGenerator.Providers
 {
-    internal class PageProvider : IBasePageProvider
+    class FragmentProvider : IBasePageProvider
     {
-        private IMetadataProvider _pageMetadataProvider;
+        private IMetadataProvider _fragmentMetadataProvider;
 
-        private readonly IList<IBasePage> _pages;
+        private readonly IList<IBasePage> _fragments;
 
         public IReadOnlyCollection<IBasePage> Pages
         {
             get
             {
-                return new ReadOnlyCollection<IBasePage>(_pages);
+                return new ReadOnlyCollection<IBasePage>(_fragments);
             }
         }
 
-        public PageProvider( IMetadataProvider pageMetadataProvider )
+        public FragmentProvider(IMetadataProvider fragmentMetadataProvider)
         {
-            Guard.VerifyArgumentNotNull(pageMetadataProvider, nameof(pageMetadataProvider));
+            Guard.VerifyArgumentNotNull(fragmentMetadataProvider, nameof(fragmentMetadataProvider));
 
-            _pageMetadataProvider = pageMetadataProvider;
+            _fragmentMetadataProvider = fragmentMetadataProvider;
 
-            _pages = ParseMetadataFiles();
+            _fragments = ParseMetadataFiles();
         }
 
-        // TODO: Reconcile this logic with the BlogPostProvider
         private IList<IBasePage> ParseMetadataFiles()
         {
-            IList<IBasePage> returnPages = new List<IBasePage>();
+            IList<IBasePage> returnFragments = new List<IBasePage>();
             Markdown markdownTransformer = new Markdown();
 
-            foreach (IPageMetadata metadata in _pageMetadataProvider.Metadata)
+            foreach (IFragmentMetadata metadata in _fragmentMetadataProvider.Metadata)
             {
                 try
                 {
                     string pathToMarkdown = Path.GetFullPath(metadata.Markdown);
                     string markdown = File.ReadAllText(pathToMarkdown);
                     string html = markdownTransformer.Transform(markdown);
-                    returnPages.Add(new Page(metadata, html));
+                    returnFragments.Add(new Fragment(metadata, html));
                 }
                 catch (Exception e)
                 {
@@ -53,7 +52,7 @@ namespace StaticSiteGenerator.Providers
                 }
             }
 
-            return returnPages;
+            return returnFragments;
         }
     }
 }

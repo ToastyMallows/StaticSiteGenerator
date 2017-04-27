@@ -1,6 +1,4 @@
 ﻿using HtmlAgilityPack;
-using StaticSiteGenerator.Models;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -10,7 +8,7 @@ namespace StaticSiteGenerator.Composers
     {
         protected string fullPathToTemplate = null;
 
-        public abstract bool TryCompose( IReadOnlyCollection<IBasePage> basePageData );
+        public abstract void Compose();
 
         protected abstract string TemplateFile { get; }
 

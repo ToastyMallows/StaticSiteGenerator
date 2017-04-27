@@ -12,78 +12,49 @@ namespace StaticSiteGenerator.Providers
 {
     internal sealed class BlogPostProvider : IBasePageProvider
     {
-        private const string POST_FOLDER = "posts";
+        private IMetadataProvider _blogPostMetadataProvider;
 
-        public bool TryParseMetadataFiles( out IReadOnlyCollection<IBasePage> blogPosts )
+        private readonly IList<IBasePage> _pages;
+
+        public IReadOnlyCollection<IBasePage> Pages
         {
-            blogPosts = null;
-            string postsDirectory = Path.Combine( IOContext.Current.GetCurrentDirectory(), POST_FOLDER );
-
-            if ( !IOContext.Current.DirectoryExists( postsDirectory ) )
+            get
             {
-                ErrorWriterContext.Current.WriteLine( "No posts folder" );
-                return false;
+                return new ReadOnlyCollection<IBasePage>(_pages);
             }
-
-            IEnumerable<string> jsonMetadataFiles = IOContext.Current.GetFilesFromDirectory( postsDirectory, "*.json", SearchOption.AllDirectories );
-
-            ICollection<IBlogPostMetadata> blogPostMetadata = processJsonMetadataFiles( jsonMetadataFiles );
-
-            if ( blogPostMetadata.IsEmpty() )
-            {
-                ErrorWriterContext.Current.WriteLine( "No blog post metadata files" );
-                return false;
-            }
-
-            return processBlogPosts( blogPostMetadata, out blogPosts );
         }
 
-        private static ICollection<IBlogPostMetadata> processJsonMetadataFiles( IEnumerable<string> jsonMetadataFiles )
+        public BlogPostProvider(IMetadataProvider blogPostMetadataProvider)
         {
-            ICollection<IBlogPostMetadata> blogPostMetadata = new Collection<IBlogPostMetadata>();
+            Guard.VerifyArgumentNotNull(blogPostMetadataProvider, nameof(blogPostMetadataProvider));
 
-            foreach ( string jsonFile in jsonMetadataFiles )
-            {
-                string json = File.ReadAllText( jsonFile );
+            _blogPostMetadataProvider = blogPostMetadataProvider;
 
-                IBlogPostMetadata metadata = JsonConvert.DeserializeObject<BlogPostMetadata>( json );
-                if ( metadata.LayoutType != LayoutType.Post )
-                {
-                    // This metadata file isn't for a blog post, move on!
-                    continue;
-                }
-
-                blogPostMetadata.Add( metadata );
-            }
-
-            return blogPostMetadata;
+            _pages = ParseMetadataFiles();
         }
 
-        private static bool processBlogPosts( IEnumerable<IBlogPostMetadata> blogPostMetadata, out IReadOnlyCollection<IBasePage> blogPosts )
+        private IList<IBasePage> ParseMetadataFiles()
         {
-            blogPosts = null;
-            ICollection<IBlogPost> returnBlogPosts = new Collection<IBlogPost>();
+            IList<IBasePage> returnBlogPosts = new List<IBasePage>();
             Markdown markdownTransformer = new Markdown();
 
-            foreach ( IBlogPostMetadata metadata in blogPostMetadata )
+            foreach (IBlogPostMetadata metadata in _blogPostMetadataProvider.Metadata)
             {
                 try
                 {
-                    string pathToMarkdown = Path.GetFullPath( metadata.Markdown );
-                    string markdown = File.ReadAllText( pathToMarkdown );
-                    string html = markdownTransformer.Transform( markdown );
-                    returnBlogPosts.Add( new BlogPost( metadata, html ) );
+                    string pathToMarkdown = Path.GetFullPath(metadata.Markdown);
+                    string markdown = File.ReadAllText(pathToMarkdown);
+                    string html = markdownTransformer.Transform(markdown);
+                    returnBlogPosts.Add(new BlogPost(metadata, html));
                 }
-                catch ( Exception e )
+                catch (Exception e)
                 {
-                    ErrorWriterContext.Current.WriteLine( e.ToString() );
-                    return false;
+                    ErrorWriterContext.Current.WriteLine(e.ToString());
+                    throw e;
                 }
             }
 
-            blogPosts = new ReadOnlyCollection<IBlogPost>( returnBlogPosts.OrderByDescending( blogPost => blogPost.Metadata.Date ).ToList() );
-
-            return true;
+            return returnBlogPosts.OrderByDescending(blogPost => ((IBlogPost)blogPost).Metadata.Date).ToList();
         }
     }
 }

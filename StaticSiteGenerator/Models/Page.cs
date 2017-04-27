@@ -1,4 +1,7 @@
-﻿namespace StaticSiteGenerator.Models
+﻿using System;
+using System.Text.RegularExpressions;
+
+namespace StaticSiteGenerator.Models
 {
     internal class Page : IPage
     {
@@ -19,6 +22,21 @@
         public string HTML
         {
             get;
+        }
+
+        public string Path
+        {
+            get
+            {
+                return getFolderName(Metadata.Title);
+                //string path = System.IO.Path.Combine(urlSafeTitle, "index.html");
+                //return path;
+            }
+        }
+
+        private string getFolderName(string path)
+        {
+            return Regex.Replace(path, @"[!@#$%^&*()\[\]\\\/:;'"".,?=+{}|_~`<>]", string.Empty).Replace(" ", "-");
         }
     }
 }

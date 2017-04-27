@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace StaticSiteGenerator.Providers
 {
-    internal interface IBasePageProvider
+    internal interface IMetadataProvider
     {
-        IReadOnlyCollection<IBasePage> Pages { get; }
+        IReadOnlyCollection<IBasePageMetadata> Metadata { get; }
     }
 }

@@ -58,9 +58,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Composers\BlogTemplateComposer.cs" />
+    <Compile Include="Composers\BlogComposer.cs" />
+    <Compile Include="Composers\FragmentComposer.cs" />
+    <Compile Include="Composers\Interfaces\IFragmentComposer.cs" />
     <Compile Include="Composers\Interfaces\ITemplateComposer.cs" />
-    <Compile Include="Composers\PageTemplateComposer.cs" />
+    <Compile Include="Composers\PageComposer.cs" />
     <Compile Include="Composers\TemplateComposer.cs" />
     <Compile Include="Contexts\ErrorWriterContext.cs" />
     <Compile Include="Contexts\IOContext.cs" />
@@ -68,14 +70,19 @@
     <Compile Include="Enumerations.cs" />
     <Compile Include="Generators\BasePageGenerator.cs" />
     <Compile Include="Generators\Interfaces\IGenerator.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Helpers\ExtensionMethods.cs" />
     <Compile Include="Helpers\Guard.cs" />
     <Compile Include="Models\BlogPost.cs" />
     <Compile Include="Models\BlogPostMetadata.cs" />
+    <Compile Include="Models\Fragment.cs" />
+    <Compile Include="Models\FragmentMetadata.cs" />
     <Compile Include="Models\Interfaces\IBasePage.cs" />
     <Compile Include="Models\Interfaces\IBasePageMetadata.cs" />
     <Compile Include="Models\Interfaces\IBlogPost.cs" />
     <Compile Include="Models\Interfaces\IBlogPostMetadata.cs" />
+    <Compile Include="Models\Interfaces\IFragment.cs" />
+    <Compile Include="Models\Interfaces\IFragmentMetadata.cs" />
     <Compile Include="Models\Interfaces\IOptions.cs" />
     <Compile Include="Models\Interfaces\IPage.cs" />
     <Compile Include="Models\Interfaces\IPageMetadata.cs" />
@@ -85,8 +92,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\BlogPostProvider.cs" />
+    <Compile Include="Providers\FragmentProvider.cs" />
+    <Compile Include="Providers\Interfaces\IMetadataProvider.cs" />
     <Compile Include="Providers\Interfaces\IBasePageProvider.cs" />
     <Compile Include="Generators\SiteGenerator.cs" />
+    <Compile Include="Providers\MetadataProvider.cs" />
     <Compile Include="Providers\PageProvider.cs" />
   </ItemGroup>
   <ItemGroup>

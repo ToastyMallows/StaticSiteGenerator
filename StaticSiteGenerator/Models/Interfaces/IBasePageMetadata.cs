@@ -4,8 +4,6 @@
     {
         LayoutType LayoutType { get; set; }
 
-        string Title { get; set; }
-
         string Markdown { get; set; }
     }
 }

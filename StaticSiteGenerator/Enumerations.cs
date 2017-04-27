@@ -12,6 +12,9 @@ namespace StaticSiteGenerator
         Post = 1,
 
         [Description( "page" )]
-        Page = 2
+        Page = 2,
+
+        [Description("fragment")]
+        Fragment = 3,
     }
 }

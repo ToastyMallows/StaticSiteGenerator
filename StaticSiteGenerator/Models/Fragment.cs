@@ -1,12 +1,14 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace StaticSiteGenerator.Models
 {
-    [DebuggerDisplay("Date = {Metadata.Date}, Title = {Metadata.Title}")]
-    internal class BlogPost : IBlogPost
+    internal sealed class Fragment : IFragment
     {
-
-        public BlogPost(IBlogPostMetadata metadata, string html)
+        public Fragment(IFragmentMetadata metadata, string html)
         {
             Guard.VerifyArgumentNotNull(metadata, nameof(metadata));
             Guard.VerifyArgumentNotNull(html, nameof(html));
@@ -15,7 +17,7 @@ namespace StaticSiteGenerator.Models
             HTML = html;
         }
 
-        public IBlogPostMetadata Metadata
+        public IFragmentMetadata Metadata
         {
             get;
         }
