@@ -9,6 +9,10 @@ namespace StaticSiteGenerator.Models
 
         string PageTemplateFile { get; set; }
 
+        string PageCSSFile { get; set; }
+
+        string BlogCSSFile { get; set; }
+
         string GetUsage();
 
         string OutputDirectory { get; set; }

@@ -16,6 +16,8 @@ namespace StaticSiteGenerator
 
         [Description("fragment")]
         Fragment = 3,
+
+        MainPage = 4
     }
 
     public enum SpecialFragmentType

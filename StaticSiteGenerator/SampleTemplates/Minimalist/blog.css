@@ -1,0 +1,141 @@
+﻿body
+{
+    font-size: 18px;
+}
+
+hr
+{
+    border-color: lightgray;
+    width: 80%;
+}
+
+#SSGHeaderPages
+{
+    display: flex;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+    #SSGHeaderPages > a
+    {
+        padding: 0 15px;
+    }
+
+#blogTitle
+{
+    font-size: 35px;
+}
+
+#bodyWrapper
+{
+    display: flex;
+
+    -ms-flex-direction: column;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+#blogWrapper
+{
+    margin: 0 10%;
+}
+
+#SSGBlog
+{
+    text-align: left;
+}
+
+#blogMetadataWrapper
+{
+    display: flex;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+}
+
+#blogPostTitleWrapper
+{
+    font-weight: bold;
+    font-size: 30px;
+    padding-bottom: 10px;
+}
+
+#blogPostDateWrapper
+{
+    font-size: 16px;
+}
+
+#blogPostCategoriesWrapper
+{
+    font-size: 16px;
+}
+
+
+#blogNavigationWrapper
+{
+    display: flex;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: 10px;
+}
+
+#footerWrapper
+{
+    font-size: 14px;
+}
+
+@media only screen and (max-width: 700px)
+{
+    #blogMetadataWrapper
+    {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+        #blogMetadataWrapper > div
+        {
+            float: initial;
+            padding-bottom: 10px;
+        }
+
+    #blogPostTitleWrapper
+    {
+        order: 1;
+    }
+
+    #blogPostDateWrapper
+    {
+        padding-right: initial;
+        order: 2;
+    }
+
+    #blogPostCategoriesWrapper
+    {
+        order: 3;
+    }
+}
+
+@media only screen and (max-width: 400px)
+{
+    #SSGHeaderPages
+    {
+        -ms-flex-wrap: wrap;
+        -webkit-flex-wrap: wrap;
+        flex-wrap: wrap;
+    }
+}

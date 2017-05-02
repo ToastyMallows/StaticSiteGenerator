@@ -16,13 +16,14 @@ namespace StaticSiteGenerator.Composers
         private const string PreviousPostXPath = "//a[@id='" + Constants.PreviousID + "']";
         private const string BlogXPath = "//div[@id='" + Constants.BlogID + "']";
         private const string TitleXPath = "//*[contains(@class,'" + Constants.TitleClass + "')]";
+        private const string HeadXPath = "//head";
         private const string DateXPath = "//*[contains(@class,'" + Constants.DateClass + "')]";
         private const string HREF = "href";
 
         private readonly IBasePageProvider _blogProvider;
-        private readonly IReadOnlyDictionary<string, Func<Type,HtmlDocument>> _composedFragments;
+        private readonly IReadOnlyDictionary<string, Func<LayoutType,HtmlDocument>> _composedFragments;
 
-        public BlogComposer(IBasePageProvider blogProvider, IReadOnlyDictionary<string, Func<Type,HtmlDocument>> composedFragments)
+        public BlogComposer(IBasePageProvider blogProvider, IReadOnlyDictionary<string, Func<LayoutType,HtmlDocument>> composedFragments)
         {
             Guard.VerifyArgumentNotNull(blogProvider, nameof(blogProvider));
             Guard.VerifyArgumentNotNull(composedFragments, nameof(composedFragments));
@@ -43,18 +44,36 @@ namespace StaticSiteGenerator.Composers
 
         public override void Compose()
         {
-            IReadOnlyCollection<IBasePage> blogPosts = _blogProvider.Pages;
+            #region Copy CSS File to Output directory
+
+            string cssFile = OptionsContext.Current.Options.BlogCSSFile;
+            string cssFolder = Path.Combine(OptionsContext.Current.Options.OutputDirectory, "css");
+            IOContext.Current.CreateDirectory(cssFolder);
+            IOContext.Current.FileCopy(cssFile, Path.Combine(cssFolder, cssFile));
+
+            #endregion
+
+            IReadOnlyCollection <IBasePage> blogPosts = _blogProvider.Pages;
             int index = 1;
             int posts = blogPosts.Count;
 
             IList<PopulatedTemplate> populatedTemplates = new List<PopulatedTemplate>();
+            PopulatedTemplate rootIndexTemplate = null;
 
             foreach (IBlogPost blogPost in blogPosts)
             {
+                // ASSUMPTION: First blog post in the list is the newest, should have been sorted by date in the BlogPostProvider.
+                // Only run this code once.
+                if (rootIndexTemplate == null)
+                {
+                    rootIndexTemplate = createRootIndexPopulatedTemplate(blogPost, posts);
+                }
+
                 try
                 {
                     HtmlDocument template = CopyOfTemplate;
 
+                    addBlogCSS(template, blogPost);
                     replaceBlogDiv(template, blogPost);
                     replaceAllTitles(template, blogPost);
                     replaceAllDates(template, blogPost);
@@ -94,6 +113,43 @@ namespace StaticSiteGenerator.Composers
                 index++;
             }
 
+            #region Root Index page creation
+
+            // Create the main page root index file first
+            if (rootIndexTemplate == null)
+            {
+                throw new InvalidOperationException("Stopped because the main page wasn't going to be created");
+            }
+
+            // Only two possible cases:
+            //      1. There is only one blog post
+            //      2. This is the first blog post of many
+            // The first blog post should not need next or both navigation buttons.
+            switch (rootIndexTemplate.ButtonsNeeded)
+            {
+                case NavigationButtons.None:
+                    {
+                        hideNext(rootIndexTemplate);
+                        hidePrevious(rootIndexTemplate);
+                    }
+                    break;
+                case NavigationButtons.PreviousOnly:
+                    {
+                        // ASSUMPTION: The first index will be the previous page, based on date sorting
+                        PopulatedTemplate previousTemplate = populatedTemplates[1];
+                        replacePrevious(rootIndexTemplate, previousTemplate.RootRelativePath);
+                        hideNext(rootIndexTemplate);
+                    }
+                    break;
+                default:
+                    throw new InvalidOperationException(Invariant($"Enum value {rootIndexTemplate.ButtonsNeeded} is not valid for the first blog post"));
+            }
+
+            rootIndexTemplate.SaveAsRootIndex();
+
+            #endregion
+
+            // Now create the rest of the blog pages
             for (int i = 0; i < populatedTemplates.Count; i++)
             {
                 PopulatedTemplate currentTemplate = populatedTemplates[i];
@@ -101,8 +157,10 @@ namespace StaticSiteGenerator.Composers
                 switch (currentTemplate.ButtonsNeeded)
                 {
                     case NavigationButtons.None:
-                        hideNext(currentTemplate);
-                        hidePrevious(currentTemplate);
+                        {
+                            hideNext(currentTemplate);
+                            hidePrevious(currentTemplate);
+                        }
                         break;
                     case NavigationButtons.NextOnly:
                         {
@@ -135,7 +193,44 @@ namespace StaticSiteGenerator.Composers
             }
         }
 
-        private void replaceAllFragments(HtmlDocument template)
+        private PopulatedTemplate createRootIndexPopulatedTemplate(IBlogPost blogPost, int posts)
+        {
+            try
+            {
+                HtmlDocument template = CopyOfTemplate;
+
+                addBlogCSS(template, blogPost, LayoutType.MainPage);
+                replaceBlogDiv(template, blogPost);
+                replaceAllTitles(template, blogPost);
+                replaceAllDates(template, blogPost);
+                replaceAllFragments(template, LayoutType.MainPage);
+
+                NavigationButtons buttonsNeeded;
+
+                // Only two possible cases:
+                //      1. There is only one blog post
+                //      2. This is the first blog post of many
+                // The first blog post should not need next or both navigation buttons.
+                if (posts == 1)
+                {
+                    buttonsNeeded = NavigationButtons.None;
+                }
+                else
+                {
+                    buttonsNeeded = NavigationButtons.PreviousOnly;
+                }
+
+                return new PopulatedTemplate(blogPost, template, buttonsNeeded, OptionsContext.Current.Options.OutputDirectory);
+            }
+            catch (Exception e)
+            {
+                ErrorWriterContext.Current.WriteLine(Invariant($"Error creating blog post with title {blogPost.Metadata.Title}."));
+                ErrorWriterContext.Current.WriteLine(e.ToString());
+                throw e;
+            }
+        }
+
+        private void replaceAllFragments(HtmlDocument template, LayoutType layoutType = LayoutType.Post)
         {
             foreach (string fragmentID in _composedFragments.Keys)
             {
@@ -147,12 +242,27 @@ namespace StaticSiteGenerator.Composers
                     continue;
                 }
 
-                Func<Type,HtmlDocument> composedFragment = _composedFragments[fragmentID];
+                Func<LayoutType,HtmlDocument> composedFragmentFunc = _composedFragments[fragmentID];
                 foreach (HtmlNode fragmentNode in fragmentNodes)
                 {
-                    fragmentNode.InnerHtml = composedFragment(typeof(BlogPost)).DocumentNode.InnerHtml;
+                    fragmentNode.InnerHtml = composedFragmentFunc(layoutType).DocumentNode.InnerHtml;
                 }
             }
+        }
+
+        private void addBlogCSS(HtmlDocument template, IBlogPost blogPost, LayoutType layoutType = LayoutType.Post)
+        {
+            string cssLink = "../../css".AppendPath(OptionsContext.Current.Options.BlogCSSFile);
+
+            // If we're doing the main page, we don't need to go up any directories
+            if (layoutType == LayoutType.MainPage)
+            {
+                cssLink = "css".AppendPath(OptionsContext.Current.Options.BlogCSSFile);
+            }
+
+            string linkNodeString = Invariant($"<link rel=\"stylesheet\" type=\"text/css\" href=\"{cssLink}\" />");
+            HtmlNode headNode = template.DocumentNode.SelectSingleNode(HeadXPath);
+            headNode.InnerHtml = (headNode.InnerHtml + linkNodeString);
         }
 
         private static void replaceBlogDiv(HtmlDocument template, IBlogPost blogPost)
@@ -254,6 +364,14 @@ namespace StaticSiteGenerator.Composers
                 }
             }
 
+            public string RootRelativePath
+            {
+                get
+                {
+                    return ".".AppendPath("blog", FolderName, FILE_NAME);
+                }
+            }
+
             public string FolderName
             {
                 get
@@ -266,6 +384,19 @@ namespace StaticSiteGenerator.Composers
             public void Save()
             {
                 PopulatedDocument.Save(FullSavePath);
+            }
+
+            public void SaveAsRootIndex()
+            {
+                PopulatedDocument.Save(RootFullSavePath);
+            }
+
+            private string RootFullSavePath
+            {
+                get
+                {
+                    return Path.Combine(_outputDirectory, FILE_NAME);
+                }
             }
 
             private string FullSavePath

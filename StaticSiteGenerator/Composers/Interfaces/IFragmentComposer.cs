@@ -6,6 +6,6 @@ namespace StaticSiteGenerator.Composers
 {
     interface IFragmentComposer
     {
-        IReadOnlyDictionary<string, Func<Type,HtmlDocument>> FragmentComposingFunctions { get; }
+        IReadOnlyDictionary<string, Func<LayoutType,HtmlDocument>> FragmentComposingFunctions { get; }
     }
 }

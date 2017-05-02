@@ -14,10 +14,10 @@ namespace StaticSiteGenerator.Composers
         private const string TitleXPath = "//*[contains(@class,'" + Constants.TitleClass + "')]";
         private const string PAGES_FOLDER = "pages";
         private readonly IBasePageProvider _pageProvider;
-        private readonly IReadOnlyDictionary<string, Func<Type,HtmlDocument>> _composedFragments;
+        private readonly IReadOnlyDictionary<string, Func<LayoutType,HtmlDocument>> _composedFragments;
 
 
-        public PageComposer( IBasePageProvider pageProvider, IReadOnlyDictionary<string, Func<Type, HtmlDocument>> composedFragments )
+        public PageComposer( IBasePageProvider pageProvider, IReadOnlyDictionary<string, Func<LayoutType, HtmlDocument>> composedFragments )
         {
             Guard.VerifyArgumentNotNull(pageProvider, nameof(pageProvider));
             Guard.VerifyArgumentNotNull(composedFragments, nameof(composedFragments));
@@ -99,10 +99,10 @@ namespace StaticSiteGenerator.Composers
                     continue;
                 }
 
-                Func<Type, HtmlDocument> composedFragment = _composedFragments[fragmentID];
+                Func<LayoutType, HtmlDocument> composedFragment = _composedFragments[fragmentID];
                 foreach (HtmlNode fragmentNode in fragmentNodes)
                 {
-                    fragmentNode.InnerHtml = composedFragment(typeof(Page)).DocumentNode.InnerHtml;
+                    fragmentNode.InnerHtml = composedFragment(LayoutType.Page).DocumentNode.InnerHtml;
                 }
             }
         }
